@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d1428" />
+  <meta name="description" content="Simulador didáctico de un comparador digital de 3 bits, con entradas interactivas, ecuaciones booleanas y tabla de verdad." />
+  <title>Laboratorio digital | Comparador de 3 bits</title>
+  <style>
+    :root { color-scheme: dark; --bg: #0b1020; --panel: #141d34; --panel2: #1a2641; --stroke: #30405f; --muted: #a7b6d1; --text: #f2f6ff; --cyan: #50d8e6; --green: #47dfa8; --amber: #ffce70; --red: #ff8396; --shadow: 0 18px 42px #03071150; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: radial-gradient(circle at 72% -8%,#203b63 0, transparent 35%), var(--bg); color:var(--text); font-family: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; line-height:1.5; }
+    button { font:inherit; } button:focus-visible {outline:3px solid var(--amber); outline-offset:4px;}
+    .container {width:min(1100px,calc(100% - 28px)); margin: 0 auto 60px;}
+    header { padding:38px 0 21px; }
+    .eyebrow {color:var(--cyan); text-transform:uppercase;letter-spacing:0.17em;font-weight:800;font-size:12px;}
+    h1 {font-size:clamp(27px,4.3vw,44px);line-height:1.13;margin:9px 0 10px;letter-spacing:-0.035em;}
+    header p {max-width:700px;color:var(--muted);margin:0;font-size:16px;}
+    h2 {font-size:21px;margin:0 0 5px;line-height:1.2;} h3{font-size:16px;margin:0 0 7px;}
+    .layout{display:grid;grid-template-columns:1.13fr 0.87fr;gap:16px;align-items:stretch;}
+    .card {background:linear-gradient(155deg,var(--panel),#10182b);border:1px solid var(--stroke);border-radius:19px;padding:22px;box-shadow:var(--shadow);min-width:0;}
+    .card p{color:var(--muted);margin:3px 0 17px;font-size:14px;}
+    .ports{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .port{background:var(--panel2);border:1px solid #3c4d70;border-radius:14px;padding:16px 14px;text-align:center;min-width:0;}
+    .port-title{font-size:13px;text-transform:uppercase;letter-spacing:.13em;font-weight:800;color:var(--muted);}
+    .binary{font-size:clamp(31px,4vw,44px);font-variant-numeric:tabular-nums;letter-spacing:.14em;font-weight:750;margin:4px 0 1px;}
+    .decimal{font-size:13px;color:var(--muted);margin-bottom:18px;}
+    .switches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+    .switch-col{display:flex;align-items:center;flex-direction:column;gap:7px;}
+    .switch-col small{color:var(--muted);font-size:12px;font-weight:700;}
+    .switch{width:100%;min-height:49px;border:1px solid #607194;border-radius:11px;background:#283654;color:#c3d0e5;font-weight:800;font-size:23px;cursor:pointer;transition:background .14s ease,transform .14s ease;}
+    .switch:hover{transform:translateY(-1px);}
+    .switch[data-on="true"]{color:#082024;background:var(--cyan);border-color:var(--cyan);}
+    .note{font-size:12px;color:var(--muted);margin-top:14px;}
+    .output-stack {display:grid;grid-template-columns:1fr;gap:12px;margin-top:18px;}
+    .output {display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel2);border:1px solid #3c4d70;border-radius:12px;padding:15px 18px;}
+    .output .left{display:flex;align-items:center;gap:11px;font-size:21px;font-weight:750;}
+    .led{height:17px;width:17px;border-radius:50%;background:#374761;border:2px solid #66738a;box-shadow:inset 0 1px 4px #101828;flex:0 0 auto;}
+    .output.active .led{background:var(--green);border-color:#b4ffdb;box-shadow:0 0 18px #47dfa88f;}
+    .output .logic{font-size:21px;font-weight:750;font-variant-numeric:tabular-nums;color:#a9b7d0;}
+    .output.active .logic{color:var(--green);}
+    .result{display:flex;gap:10px;align-items:center;justify-content:center;background:#132f34;border:1px solid #285f5b;border-radius:12px;padding:13px;text-align:center;font-size:15px;margin-top:16px;}
+    .result strong{color:var(--green);font-size:20px;}
+    .btn-line{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+    .btn{padding:9px 14px;background:#2a3a57;border:1px solid #61708a;color:var(--text);border-radius:9px;font-weight:650;cursor:pointer;}
+    .btn:hover{background:#354765;}
+    .section {margin-top:16px;}
+    .stages{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:15px;}
+    .stage{border:1px solid #364a6b;background:#1a2641;padding:14px;border-radius:12px;}
+    .stage .headline{color:var(--muted);font-size:12px;margin-bottom:9px;}
+    .stage .value{font-size:24px;font-weight:800;}
+    .state{font-size:13px;color:var(--muted);margin-top:5px;}
+    .eq{font-family: ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;white-space:normal;overflow-wrap:anywhere;background:#0c1426;padding:12px;border:1px solid #2c3f5f;border-radius:9px;margin-top:9px;line-height:1.75;}
+    .eq var{color:var(--cyan);font-style:normal;}
+    .eq-note{font-size:13px;color:var(--muted);margin-top:10px;}
+    .table-wrap{overflow:auto;max-height:380px;border:1px solid var(--stroke);border-radius:12px;margin-top:13px;}
+    table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums;min-width:390px;}
+    th,td{padding:9px 11px;text-align:center;border-bottom:1px solid #2a3954;}
+    th{position:sticky;top:0;background:#253450;color:#ecf2ff;z-index:1;}
+    tr:nth-child(even){background:#17233c;} tbody tr{cursor:pointer;} tbody tr:hover{background:#344664;}
+    tbody tr.selected{background:#1e5b5b;outline:2px solid var(--cyan);outline-offset:-2px;}
+    .one{font-weight:800;color:var(--green);} .zero{color:var(--muted);}
+    footer{text-align:center;color:var(--muted);font-size:12px;padding:18px;}
+    @media (max-width:800px){.layout{grid-template-columns:1fr;}.card{padding:18px}.stages{grid-template-columns:1fr 1fr 1fr;}}
+    @media (max-width:540px){header{padding-top:26px;} .container{width:min(100% - 20px,1100px);} .ports{gap:9px;}.port{padding:12px 8px;}.binary{font-size:29px;}.switches{gap:5px;}.switch{min-height:48px;}.stages{grid-template-columns:1fr;}.stage{display:grid;grid-template-columns:1.1fr .5fr;gap:2px;align-items:center;}.stage .headline{margin:0;}.stage .state{grid-column:1 / -1;margin:0;}.card{padding:15px;}}
+    @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;}}
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <div class="eyebrow">Laboratorio de electrónica digital</div>
+      <h1>Comparador digital de 3 bits</h1>
+      <p>Activa o desactiva los bits de los puertos A y B. Observa las salidas A &gt; B, A = B y A &lt; B, y revisa cómo se obtiene cada resultado.</p>
+    </header>
+
+    <div class="layout">
+      <section class="card" aria-labelledby="inputs-heading">
+        <h2 id="inputs-heading">1. Entradas binarias</h2>
+        <p>Presiona un bit para cambiarlo entre 0 y 1. El bit 2 es el más significativo (MSB).</p>
+        <div class="ports">
+          <div class="port"><div class="port-title">Puerto A</div><div class="binary" id="binaryA">101</div><div class="decimal" id="decimalA">Decimal: 5</div><div class="switches" id="switchesA"></div></div>
+          <div class="port"><div class="port-title">Puerto B</div><div class="binary" id="binaryB">011</div><div class="decimal" id="decimalB">Decimal: 3</div><div class="switches" id="switchesB"></div></div>
+        </div>
+        <div class="note">Rango de cada puerto: 000 a 111 (0 a 7 en decimal).</div>
+        <div class="btn-line"><button class="btn" id="reset" type="button">Restablecer A=5, B=3</button><button class="btn" id="random" type="button">Valores aleatorios</button></div>
+      </section>
+
+      <section class="card" aria-labelledby="outputs-heading">
+        <h2 id="outputs-heading">2. Salidas del comparador</h2>
+        <p>Una sola salida es 1 para cada combinación de entradas.</p>
+        <div class="output-stack">
+          <div class="output" id="outG"><div class="left"><span class="led" aria-hidden="true"></span><span>A &gt; B</span></div><span class="logic" id="logicG">1</span></div>
+          <div class="output" id="outE"><div class="left"><span class="led" aria-hidden="true"></span><span>A = B</span></div><span class="logic" id="logicE">0</span></div>
+          <div class="output" id="outL"><div class="left"><span class="led" aria-hidden="true"></span><span>A &lt; B</span></div><span class="logic" id="logicL">0</span></div>
+        </div>
+        <div class="result" aria-live="polite">Resultado: <strong id="result">5 &gt; 3</strong></div>
+      </section>
+    </div>
+
+    <section class="card section" aria-labelledby="method-heading">
+      <h2 id="method-heading">3. ¿Cómo se determina el resultado?</h2>
+      <p>Se comparan los bits desde el más significativo. El primer par diferente determina cuál número es mayor.</p>
+      <div class="stages" id="stages"></div>
+      <div class="eq-note" id="explain" aria-live="polite"></div>
+    </section>
+
+    <section class="card section" aria-labelledby="equations-heading">
+      <h2 id="equations-heading">4. Ecuaciones booleanas</h2>
+      <p>Las siguientes expresiones permiten implementar el comparador utilizando únicamente compuertas lógicas.</p>
+      <div class="eq"><var>E₂ = A₂ XNOR B₂</var><br><var>E₁ = A₁ XNOR B₁</var><br><var>E₀ = A₀ XNOR B₀</var><br><strong>A = B</strong> = E₂ · E₁ · E₀</div>
+      <div class="eq"><strong>A &gt; B</strong> = (A₂ · ¬B₂) + (E₂ · A₁ · ¬B₁) + (E₂ · E₁ · A₀ · ¬B₀)</div>
+      <div class="eq"><strong>A &lt; B</strong> = (¬A₂ · B₂) + (E₂ · ¬A₁ · B₁) + (E₂ · E₁ · ¬A₀ · B₀)</div>
+      <div class="eq-note">Donde · significa AND, + significa OR y ¬ significa NOT. XNOR vale 1 cuando los bits comparados son iguales. Las ecuaciones son una implementación combinacional; no se dibujan aquí las compuertas individuales.</div>
+    </section>
+
+    <section class="card section" aria-labelledby="truth-heading">
+      <h2 id="truth-heading">5. Tabla de verdad completa</h2>
+      <p>El comparador tiene 6 entradas en total (3 por puerto), por lo que existen 2⁶ = 64 combinaciones. Toca cualquier fila para cargarla en el simulador.</p>
+      <div class="table-wrap"><table><thead><tr><th>A₂A₁A₀</th><th>B₂B₁B₀</th><th>A &gt; B</th><th>A = B</th><th>A &lt; B</th></tr></thead><tbody id="truthTable"></tbody></table></div>
+      <div class="btn-line"><button class="btn" type="button" id="downloadCsv">Descargar tabla CSV</button></div>
+    </section>
+    <footer>Simulador educativo · Sin conexión a Internet y sin dependencias externas</footer>
+  </main>
+  <script>
+    'use strict';
+    let A = 5, B = 3;
+    const bin = n => n.toString(2).padStart(3, '0');
+    const bit = (n, i) => (n >> i) & 1;
+    const get = id => document.getElementById(id);
+
+    function switches(port) {
+      const host = get('switches' + port);
+      [2,1,0].forEach(i => {
+        const wrap = document.createElement('div'); wrap.className = 'switch-col';
+        const caption = document.createElement('small'); caption.textContent = 'Bit ' + i;
+        const button = document.createElement('button'); button.className = 'switch'; button.type = 'button'; button.id = `bit${port}${i}`;
+        button.setAttribute('aria-label', `Puerto ${port}, bit ${i}`);
+        button.addEventListener('click', () => { if (port === 'A') A ^= (1 << i); else B ^= (1 << i); render(); });
+        wrap.append(caption, button); host.appendChild(wrap);
+      });
+    }
+
+    function buildTable() {
+      const tbody = get('truthTable');
+      const fragment = document.createDocumentFragment();
+      for(let a=0;a<8;a++) for(let b=0;b<8;b++) {
+        const tr=document.createElement('tr'); tr.id=`row-${a}-${b}`; tr.tabIndex=0;
+        const vals=[bin(a),bin(b),Number(a>b),Number(a===b),Number(a<b)];
+        vals.forEach((v,i)=> {const td=document.createElement('td');td.textContent=v;if(i>=2)td.className=v?'one':'zero';tr.appendChild(td);});
+        tr.addEventListener('click',()=>{A=a;B=b;render();});
+        tr.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();A=a;B=b;render();}});
+        fragment.appendChild(tr);
+      }
+      tbody.appendChild(fragment);
+    }
+
+    function render() {
+      for(const [port,n] of [['A',A],['B',B]]) {
+        get('binary'+port).textContent=bin(n); get('decimal'+port).textContent=`Decimal: ${n}`;
+        for(let i=0;i<3;i++) { const el=get(`bit${port}${i}`), on=Boolean(bit(n,i));el.dataset.on=on;el.textContent=String(Number(on));el.setAttribute('aria-pressed',String(on)); }
+      }
+      const outputs={G:A>B,E:A===B,L:A<B};
+      for(const k of Object.keys(outputs)) {get('out'+k).classList.toggle('active',outputs[k]);get('logic'+k).textContent=outputs[k]?'1':'0';}
+      get('result').textContent=`${A} ${A>B?'>':A<B?'<':'='} ${B}`;
+
+      const states=[2,1,0].map(i=>({i,a:bit(A,i),b:bit(B,i)}));
+      get('stages').innerHTML=states.map(({i,a,b})=>{
+        const s=a===b?'Iguales':a>b?'A mayor':'B mayor';
+        return `<div class="stage"><div class="headline">Comparación del bit ${i}${i===2?' (MSB)':''}</div><div class="value">${a} : ${b}</div><div class="state">${s} · E${i} = ${Number(a===b)}</div></div>`;
+      }).join('');
+      const first=states.find(({a,b})=>a!==b);
+      get('explain').textContent=first?`Los bits de mayor peso se comparan primero. En el bit ${first.i} aparece la primera diferencia: A${first.i}=${first.a} y B${first.i}=${first.b}. Por ello, A ${A>B?'>':'<'} B.`:'Los tres pares de bits son iguales. Por ello, A = B.';
+
+      document.querySelectorAll('tbody tr.selected').forEach(row=>{row.classList.remove('selected');row.removeAttribute('aria-current');});
+      const current=get(`row-${A}-${B}`);current.classList.add('selected');current.setAttribute('aria-current','true');
+    }
+
+    get('reset').addEventListener('click',()=>{A=5;B=3;render();});
+    get('random').addEventListener('click',()=>{A=Math.floor(Math.random()*8);B=Math.floor(Math.random()*8);render();});
+    get('downloadCsv').addEventListener('click',()=>{
+      const lines=['A2A1A0,B2B1B0,A>B,A=B,A<B'];
+      for(let a=0;a<8;a++) for(let b=0;b<8;b++)lines.push(`${bin(a)},${bin(b)},${Number(a>b)},${Number(a===b)},${Number(a<b)}`);
+      const blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
+      const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='tabla_verdad_comparador_3_bits.csv';link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);
+    });
+    switches('A');switches('B');buildTable();render();
+  </script>
+</body>
+</html>
